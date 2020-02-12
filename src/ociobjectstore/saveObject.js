@@ -1,7 +1,6 @@
 
 var fs = require('fs');
 var objectStore = require('./services/objectStore.js');
-var logger = require('./logger');
 const configs = require('./configuration');
 const configuration = configs.configs;
 
@@ -20,33 +19,29 @@ var parameters = {
     compartmentId: configuration.compartmentId
 };
 var callback = function (data) {
-    logger.log('debug', JSON.stringify(data))
     console.log(JSON.stringify(data))
 };
 
-async function runShippingExtractionJob(objectName, input) {
-    logger.log('info', `runShippingExtractionJob for ${JSON.stringify(input)} for file ${objectName}`)
+async function upload(objectName, content) {
+    console.log(`upload to ${objectName}, content: ${content}`);
     auth.RESTversion = '/20160918';
-    //
-    // Upload file to objectStore
-    //
-
-    // set up the parameter object
     parameters = {
         objectName: objectName,
         namespaceName: configuration.namespaceName,
-        bucketName: configuration.bucketName
+        bucketName: configuration.bucketName,
+        body: content
     };
-    //parameters.body = JSON.stringify({ key: "special", koe: "hello", input: input });
-    parameters.body = JSON.stringify({ input });
     objectStore.obj.put(auth, parameters, callback);
-    return;
+}
 
-}// runShippingExtractionJob
+async function uploadJSON(objectName, json) {
+    return upload(objectName, JSON.stringify(json));
+}
 
 module.exports = {
-    runShippingExtractionJob: runShippingExtractionJob
+    upload,
+    uploadJSON
 }
 
 // test call
-runShippingExtractionJob("BrandNewFile.json", { content: "My very very special Content", moreContent: "Something completely different", value: 34 })
+uploadJSON("BrandNewFile.json", { content: "My very very special Content", moreContent: "Something completely different", value: 34 })
